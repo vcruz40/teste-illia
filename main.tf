@@ -13,12 +13,11 @@ terraform {
 
 module "eks" {
   source = "./modules/EKS"
-  config = local.config 
-  
+  subnet1 = "subnet-0be1e8ed6f8ec00ea"
+  subnet2 = "subnet-0c1a6ae745c5a36f2"
 }
 
 module "Athena" {
   source = "./modules/Athena"
-  config = local.config 
   
 }
