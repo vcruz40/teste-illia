@@ -1,0 +1,7 @@
+adminPassword: "senha123*"
+service:
+  type: LoadBalancer
+plugins:
+  - grafana-athena-datasource
+env:
+  GF_INSTALL_PLUGINS: "grafana-athena-datasource"

@@ -1,0 +1,265 @@
+PS D:\teste-illia-main> terraform show
+# module.Athena.aws_athena_database.testeilia:
+resource "aws_athena_database" "testeilia" {
+    bucket        = "teste-ilia-s3"
+    force_destroy = false
+    id            = "testeilia"
+    name          = "testeilia"
+    properties    = {}
+}
+
+# module.Athena.aws_athena_named_query.named_query:
+resource "aws_athena_named_query" "named_query" {
+    database  = "testeilia"
+    id        = "a029246f-5ce0-4eee-83bf-d6473591a5a0"
+    name      = "tabelailia"
+    query     = <<-EOT
+        CREATE EXTERNAL TABLE IF NOT EXISTS teste.ilia (
+          coluna1 string,
+          coluna2 string
+        )
+        ROW FORMAT DELIMITED
+        FIELDS TERMINATED BY ','
+        STORED AS TEXTFILE
+        LOCATION 's3://teste-ilia-s3/';
+    EOT
+    workgroup = "primary"
+}
+
+# module.Athena.aws_iam_policy_attachment.athena_policy_attachment:
+resource "aws_iam_policy_attachment" "athena_policy_attachment" {
+    id         = "AthenaAccessFull"
+    name       = "AthenaAccessFull"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonAthenaFullAccess"
+    roles      = [
+        "AthenaAccessRole",
+    ]
+}
+
+# module.Athena.aws_iam_role.athena_access_role:
+resource "aws_iam_role" "athena_access_role" {
+    arn                   = "arn:aws:iam::546163580170:role/AthenaAccessRole"
+    assume_role_policy    = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "sts:AssumeRole"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "ec2.amazonaws.com"
+                    }
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    create_date           = "2024-02-06T21:38:25Z"
+    force_detach_policies = false
+    id                    = "AthenaAccessRole"
+    managed_policy_arns   = []
+    max_session_duration  = 3600
+    name                  = "AthenaAccessRole"
+    path                  = "/"
+    tags_all              = {}
+    unique_id             = "AROAX6KPC3UFA7QHSCYBO"
+}
+# module.eks.aws_eks_cluster.eks-ilia:
+resource "aws_eks_cluster" "eks-ilia" {
+    arn                       = "arn:aws:eks:us-east-1:546163580170:cluster/eks-ilia"
+    certificate_authority     = [
+        {
+            data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJSzdJUmxQNFJ2aDB3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TkRBeU1EWXlNVEV6TlRsYUZ3MHpOREF5TURNeU1URTROVGxhTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUM1K1VzQXpEeklvU0p5amNjeGhoeCtNWlBIbUdKV00rRGJNRlhEdHlUaEZqdm9Lc1lvclNXSGx1ZTQKL3FUUy92V2JxK1FDVTF6dkUwMTBNYXlDeGpPK0JnUGZKRFFBVkkvMDVYckgzNmorWE50TWNNbEszUFFqeHRYSwpoRjBCbjk3WG5iVEtvNHBKNE9ia0RCeXhGTUxQcXVHQWdFMFBKWlZxcjJMakpCMWpwVjNweDdiSmJwSytZTzQ5CnBPZ1c4UGNFdUg3eXZTb09odDA4VWIxS0VMZUN4SUF6SnVIZDhLTkx6S3VwMDhjTmhIamMwT1o3NkNrRXhITnkKT1RhMS8rQ1ZzWFZ4TmE4UFppeFpwVVIrdm1NYlJNUGF1TzB6Y1NTOU8wREs3cnd1cHJrK2RMbzMzQ0VSbFYzTApqSEJvdkpZY2syWGFwQlFvSndmNTJscTM1ZklkQWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJSZkpMQm1RQSt5N2RKUEV0dGZVVVppM2sxMGx6QVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQzRrNytTT2VQTAoxT3lJbW9MQUlRMkhTN1hyU1o1OEJtdHhpaEVldWQzWnhEeERkejh1VUc3c3EwS29LblJIaXhnQVl0dlJBbk9KCjVtKzFJSHQwdFNxTXozTVk4OW9iTnZaejRWek5jUnhiNkN1dHBPWWtOMWxzVmx5dDk5TW5xSlVub2RMWjczV2YKdkxTV2dCQXpjdm1CSlNTTy9QKzFDOVlrVXNsLzZBMzlKcmR4eHhZOCtuaGVvRkthVmx0Q3VxRzFuelFXNmRBSQoySmtDYzF0NFk1THdYR3UwMC9VSHBVdFZ0ajBjaStzN0tYVjFWcTRhaHh4UXN1aUlqanI3VnFObzBRU1dTSy9qCmUyaERJMVAvZ243R0lwWGJScFFTVlkxWTBFRlhRSkVhdWJ3MHlDMm9CL3d3clFwM3FMM1MybzBrTC94TzdNUTEKZDhFVGhISlU4eG9PCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+        },
+    ]
+    created_at                = "2024-02-06 21:13:56.984 +0000 UTC"
+    enabled_cluster_log_types = []
+    endpoint                  = "https://CE566E8666C7F13C58489EACE8F12B65.gr7.us-east-1.eks.amazonaws.com"
+    id                        = "eks-ilia"
+    identity                  = [
+        {
+            oidc = [
+                {
+                    issuer = "https://oidc.eks.us-east-1.amazonaws.com/id/CE566E8666C7F13C58489EACE8F12B65"
+                },
+            ]
+        },
+    ]
+    name                      = "eks-ilia"
+    platform_version          = "eks.7"
+    role_arn                  = "arn:aws:iam::546163580170:role/eks-ilia"
+    status                    = "ACTIVE"
+    tags                      = {}
+    tags_all                  = {}
+    version                   = "1.28"
+
+    access_config {
+        authentication_mode                         = "CONFIG_MAP"
+        bootstrap_cluster_creator_admin_permissions = false
+    }
+
+    kubernetes_network_config {
+        ip_family         = "ipv4"
+        service_ipv4_cidr = "10.100.0.0/16"
+    }
+
+    vpc_config {
+        cluster_security_group_id = "sg-020427369aef09c9a"
+        endpoint_private_access   = false
+        endpoint_public_access    = true
+        public_access_cidrs       = [
+            "0.0.0.0/0",
+        ]
+        security_group_ids        = []
+        subnet_ids                = [
+            "subnet-0be1e8ed6f8ec00ea",
+            "subnet-0c1a6ae745c5a36f2",
+        ]
+        vpc_id                    = "vpc-02390cf05f9868801"
+    }
+}
+
+# module.eks.aws_eks_node_group.eks-ilia:
+resource "aws_eks_node_group" "eks-ilia" {
+    ami_type        = "AL2_x86_64"
+    arn             = "arn:aws:eks:us-east-1:546163580170:nodegroup/eks-ilia/eks-ilia/b0c6c026-47f3-27bb-b74f-9da4015b9be0"
+    capacity_type   = "ON_DEMAND"
+    cluster_name    = "eks-ilia"
+    disk_size       = 20
+    id              = "eks-ilia:eks-ilia"
+    instance_types  = [
+        "t3.medium",
+    ]
+    labels          = {}
+    node_group_name = "eks-ilia"
+    node_role_arn   = "arn:aws:iam::546163580170:role/role-node-ilia"
+    release_version = "1.28.5-20240202"
+    resources       = [
+        {
+            autoscaling_groups              = [
+                {
+                    name = "eks-eks-ilia-b0c6c026-47f3-27bb-b74f-9da4015b9be0"
+                },
+            ]
+            remote_access_security_group_id = ""
+        },
+    ]
+    status          = "ACTIVE"
+    subnet_ids      = [
+        "subnet-0be1e8ed6f8ec00ea",
+        "subnet-0c1a6ae745c5a36f2",
+    ]
+    tags            = {}
+    tags_all        = {}
+    version         = "1.28"
+
+    scaling_config {
+        desired_size = 2
+        max_size     = 3
+        min_size     = 1
+    }
+
+    update_config {
+        max_unavailable            = 1
+        max_unavailable_percentage = 0
+    }
+}
+
+# module.eks.aws_iam_role.eks:
+resource "aws_iam_role" "eks" {
+    arn                   = "arn:aws:iam::546163580170:role/eks-ilia"
+    assume_role_policy    = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "sts:AssumeRole"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "eks.amazonaws.com"
+                    }
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    create_date           = "2024-02-06T21:13:52Z"
+    force_detach_policies = false
+    id                    = "eks-ilia"
+    managed_policy_arns   = [
+        "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+        "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+    ]
+    max_session_duration  = 3600
+    name                  = "eks-ilia"
+    path                  = "/"
+    tags                  = {}
+    tags_all              = {}
+    unique_id             = "AROAX6KPC3UFOIP65TKF6"
+}
+
+# module.eks.aws_iam_role.role-node-ilia:
+resource "aws_iam_role" "role-node-ilia" {
+    arn                   = "arn:aws:iam::546163580170:role/role-node-ilia"
+    assume_role_policy    = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "sts:AssumeRole"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "ec2.amazonaws.com"
+                    }
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    create_date           = "2024-02-06T21:13:52Z"
+    force_detach_policies = false
+    id                    = "role-node-ilia"
+    managed_policy_arns   = [
+        "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+        "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+        "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+    ]
+    max_session_duration  = 3600
+    name                  = "role-node-ilia"
+    path                  = "/"
+    tags                  = {}
+    tags_all              = {}
+    unique_id             = "AROAX6KPC3UFJ5WYROIJZ"
+}
+
+# module.eks.aws_iam_role_policy_attachment.eks_AmazonEKSClusterPolicy:
+resource "aws_iam_role_policy_attachment" "eks_AmazonEKSClusterPolicy" {
+    id         = "eks-ilia-20240206211349251300000003"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    role       = "eks-ilia"
+}
+
+# module.eks.aws_iam_role_policy_attachment.eks_AmazonEKSServicePolicy:
+resource "aws_iam_role_policy_attachment" "eks_AmazonEKSServicePolicy" {
+    id         = "eks-ilia-20240206211349455100000005"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+    role       = "eks-ilia"
+}
+
+# module.eks.aws_iam_role_policy_attachment.eks_cni_policy:
+resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
+    id         = "role-node-ilia-20240206211349051100000001"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    role       = "role-node-ilia"
+}
+
+# module.eks.aws_iam_role_policy_attachment.eks_registry_policy:
+resource "aws_iam_role_policy_attachment" "eks_registry_policy" {
+    id         = "role-node-ilia-20240206211349065000000002"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    role       = "role-node-ilia"
+}
+
+# module.eks.aws_iam_role_policy_attachment.eks_worker_node_policy:
+resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
+    id         = "role-node-ilia-20240206211349259400000004"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    role       = "role-node-ilia"
+}
